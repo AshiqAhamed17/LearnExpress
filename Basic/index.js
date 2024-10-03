@@ -1,46 +1,37 @@
 const express = require('express');
 const app = express();
 
-app.get('/search', (req, res) => {
-    const {query , sort } = req.query;
+app.use(express.json());
 
-    let users = ['Alice', 'Bob', 'Charlie', 'David'];
-    if (query) {
-        users = users.filter(user => user.toLowerCase().includes(query.toLowerCase()));
-    }
+const users = [
+    { id: 1, name: 'John' },
+    { id: 2, name: 'Jane' }
+];
 
-    if(sort == "desc"){
-        users = users.reverse();
-    }
-    res.send(users);
+// Handle GET request to fetch all users
+app.get('/users', (req, res) => {
+    res.json(users); // Send the list of users as JSON
 });
 
-app.get('/products', (req, res) =>{
-     const {category, minPrice, maxPrice, sortBy } = req.query;
-     let items = [
-        { name: 'MacBook M3 Pro', category: 'Electronics', price: 3499 },
-        { name: 'LV-shirt', category: 'Clothing', price: 549 },
-        { name: 'i-phone 16', category: 'Electronics', price: 999 },
-        { name: 'Gucci', category: 'Clothing', price: 600 }
-    ];
-    if(category){
-        items = items.filter(item => item.category === category);
+app.post('/users', (req, res) => {
+    const newUser = {
+        id: users.length + 1,
+        name: req.body.name
     }
-    if(minPrice){
-        items = items.filter(item => item.price >= parseFloat(minPrice))
-    }
-    if(maxPrice){
-        items = items.filter(item => item.price <= parseFloat(maxPrice));
-    }
-    if (sortBy === 'priceAsc') {
-        items = items.sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'priceDesc') {
-        items = items.sort((a, b) => b.price - a.price);
-    }
+    users.push(newUser);
+    res.status(201).json(newUser); // Send the newly created user as JSON
+})
 
-    res.send(items);
+// Handle GET request to fetch a user by ID
+app.get('/users/:id', (req, res) => {
+    const userId = parseInt(req.params.id);
+    const user = users.find(u => u.id === userId);
+    
+    if (user) {
+        res.json(user);
+    } else {
+        res.status(404).json({ message: "User not found" });
+    }
 });
 
-app.listen((3000), () => {
-    console.log('Server running on port 3000');
-});
+app.listen(3000, () => console.log('Server running on port 3000'));
